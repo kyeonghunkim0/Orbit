@@ -8,10 +8,21 @@
 import Foundation
 import Combine
 
+
 struct DateValue: Identifiable {
     var id: String = UUID().uuidString
+    
+    /// 일
     var day: Int
+    
+    /// 날짜 Date
     var date: Date
+    
+    /// 현재 월 인지
+    var isCurrentMonth: Bool
+    
+    /// 지출 또는 소비 여부
+    var hasTransactions: Bool
 }
 
 final class CalendarViewModel: ObservableObject {
@@ -19,62 +30,60 @@ final class CalendarViewModel: ObservableObject {
     @Published var currentDate: Date = Date()
     @Published var currentMonth: Int = 0
     
-    /// 년과 월로 구성된 String 가져오기
-    /// - Parameter date: 현재 Date
-    /// - Returns: 년도와 월(2025 9월)
-    func getYearAndMonthString(from date: Date) -> [String] {
+    var monthAndYearString: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy MMMM"
+        formatter.dateFormat = "yyyy년 M월"
         formatter.locale = Locale(identifier: "ko_KR")
-        
-        let date = formatter.string(from: date)
-        return date.components(separatedBy: " ")
+        return formatter.string(from: currentDate)
     }
-    
-    /// 현재 캘린더의 월 구하기
-    /// - Parameter month: 월
-    /// - Returns: 현재 캘린더의 Date 타입의 월
-    func getCurrentMonth(from month: Int) -> Date {
+
+    func moveMonth(by value: Int) {
+        guard let newDate = Calendar.current.date(byAdding: .month, value: value, to: currentDate) else { return }
+        self.currentDate = newDate
+    }
+
+    func convertDateToDateValue() -> [DateValue] {
         let calendar = Calendar.current
         
-        guard let currentMonth = calendar.date(byAdding: .month,
-                                               value: month,
-                                               to: Date())
-        else { return Date() }
+        let currentCalendar = currentDate
         
-        return currentMonth
-    }
-    
-    func convertDateToDateValue(from currentMonth: Int) -> [DateValue] {
-        let calendar = Calendar.current
-        
-        let currentCalendar = getCurrentMonth(from: currentMonth)
-        
-        var days = currentCalendar.getAllDates().compactMap { date -> DateValue in
+        // 현재 월의 모든 날짜 생성
+        let currentMonthDays = currentCalendar.getAllDates().compactMap { date -> DateValue in
             let day = calendar.component(.day, from: date)
-            return DateValue(day: day, date: date)
+            return DateValue(day: day, date: date, isCurrentMonth: true, hasTransactions: false)
         }
         
-        // month의 가장 처음 시작되는 달
-        let firstDayOfWeek = calendar.component(.weekday, from: days.first?.date ?? Date())
+        var allDays: [DateValue] = []
         
-        // month의 가장 첫날이 되는 요일 이전을 '이전 달 날짜'로 채우기
-        let leadingCount = max(firstDayOfWeek - 1, 0)
+        // 현재 월의 첫 날이 시작하는 요일의 인덱스
+        let firstDayOfWeek = calendar.component(.weekday, from: currentMonthDays.first?.date ?? Date())
+        
+        // 이전 달의 날짜 추가
+        let leadingCount = firstDayOfWeek - 1
         if leadingCount > 0 {
-            // 이전 달
-            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: currentCalendar),
-                  let prevMonthRange = calendar.range(of: .day, in: .month, for: prevMonth) else {
-                return days
-            }
-            let prevMonthDayCount = prevMonthRange.count
-            let startDay = prevMonthDayCount - leadingCount + 1
-            for d in startDay...prevMonthDayCount {
+            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: currentCalendar) else { return [] }
+            let prevMonthDays = prevMonth.getAllDates()
+            for d in (prevMonthDays.count - leadingCount + 1)...prevMonthDays.count {
                 if let prevDate = calendar.date(bySetting: .day, value: d, of: prevMonth) {
-                    days.insert(DateValue(day: d, date: prevDate), at: 0)
+                    allDays.append(DateValue(day: d, date: prevDate, isCurrentMonth: false, hasTransactions: false))
                 }
             }
         }
         
-        return days
+        allDays.append(contentsOf: currentMonthDays)
+        
+        // 다음 달의 날짜 추가 (총 42개로 맞추기 위함)
+        let trailingCount = 42 - allDays.count
+        if trailingCount > 0 {
+            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: currentCalendar) else { return [] }
+            let nextMonthDays = nextMonth.getAllDates()
+            for d in 1...trailingCount {
+                if let nextDate = calendar.date(bySetting: .day, value: d, of: nextMonth) {
+                    allDays.append(DateValue(day: d, date: nextDate, isCurrentMonth: false, hasTransactions: false))
+                }
+            }
+        }
+        
+        return allDays
     }
 }

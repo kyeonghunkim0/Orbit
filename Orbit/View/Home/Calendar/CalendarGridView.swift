@@ -14,11 +14,8 @@ struct CalendarGridView: View {
     
     var body: some View {
         LazyVGrid(columns: colums, spacing: 30) {
-            ForEach(viewModel.convertDateToDateValue(from: viewModel.currentMonth)) { value in
-                Text("\(value.day)")
-                    .font(.callout)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.black)
+            ForEach(viewModel.convertDateToDateValue()) { date in
+                DayButton(date: date)
             }
         }
     }

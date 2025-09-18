@@ -25,4 +25,11 @@ extension Date {
                           to: startDate) ?? Date()
         }
     }
+    
+    /// 같은 날인지 확인
+    /// - Parameter other: 비교하려는 Date
+    /// - Returns: 같은 날인지 유무
+    func isSameDay(as other: Date) -> Bool {
+           Calendar.current.isDate(self, inSameDayAs: other)
+    }
 }

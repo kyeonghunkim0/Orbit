@@ -11,7 +11,7 @@ struct HomeView: View {
     @EnvironmentObject var calendarModel: CalendarViewModel
     
     var body: some View {
-        CalendarView(calenderModel: calendarModel)
+        CalendarView(calendarModel: calendarModel)
     }
 }
 

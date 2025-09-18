@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct CalendarView: View {
-    
-    @ObservedObject var calenderModel: CalendarViewModel
-    
+    @ObservedObject var calendarModel: CalendarViewModel
+
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 32) {
+            CalendarHeaderView(calendarModel: calendarModel)
             WeekdayHeaderView()
-            CalendarGridView(viewModel: calenderModel)
+            CalendarGridView(viewModel: calendarModel)
         }
     }
 }
 
 #Preview {
-    CalendarView(calenderModel: CalendarViewModel())
+    CalendarView(calendarModel: CalendarViewModel())
 }
