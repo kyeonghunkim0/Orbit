@@ -1,5 +1,5 @@
 //
-//  MainTabView.swift
+//  TabBarView.swift
 //  Orbit
 //
 //  Created by 김경훈 on 9/11/25.
@@ -7,7 +7,10 @@
 
 import SwiftUI
 
-struct MainTabView: View {
+struct TabBarView: View {
+    
+    @EnvironmentObject var calendarModel: CalendarViewModel
+    
     var body: some View {
         TabView {
             Tab("홈",
@@ -34,5 +37,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    TabBarView()
+        .environmentObject(CalendarViewModel())
 }

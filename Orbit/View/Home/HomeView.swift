@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var calendarModel: CalendarViewModel
+    
     var body: some View {
-        Text("HomeView")
+        CalendarView(calenderModel: calendarModel)
     }
 }
 
 #Preview {
     HomeView()
+        .environmentObject(CalendarViewModel())
 }
