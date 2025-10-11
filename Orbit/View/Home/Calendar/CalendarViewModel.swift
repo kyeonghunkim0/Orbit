@@ -30,6 +30,16 @@ final class CalendarViewModel: ObservableObject {
     @Published var currentDate: Date = Date()
     @Published var currentMonth: Int = 0
     
+    @Published var allTransactions: [Transaction] = Transaction.sampleTransactions
+    
+    /// Date에 따른Transaction 가져오기
+    func transactions(for date: Date) -> [Transaction] {
+        return allTransactions.filter { transaction in
+            // 년, 월, 일만 비교하여 같은지 확인
+            return Calendar.current.isDate(transaction.date, inSameDayAs: date)
+        }
+    }
+    
     var monthAndYearString: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy년 M월"
