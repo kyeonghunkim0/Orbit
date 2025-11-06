@@ -10,6 +10,8 @@ import Combine
 
 
 struct DateValue: Identifiable {
+    
+    /// UUID
     var id: String = UUID().uuidString
     
     /// 일
@@ -27,31 +29,62 @@ struct DateValue: Identifiable {
 
 final class CalendarViewModel: ObservableObject {
     
+    /// 현재 날짜
     @Published var currentDate: Date = Date()
+    
+    /// 현재 달
     @Published var currentMonth: Int = 0
     
+    /// 선택된 날짜
+    @Published var selectedDate: Date? = Date()
+    
+    /// 모든 거래 내역
     @Published var allTransactions: [Transaction] = Transaction.sampleTransactions
     
     /// Date에 따른Transaction 가져오기
     func transactions(for date: Date) -> [Transaction] {
         return allTransactions.filter { transaction in
-            // 년, 월, 일만 비교하여 같은지 확인
             return Calendar.current.isDate(transaction.date, inSameDayAs: date)
         }
     }
     
+    /// 금일 총 소비 지출 총액
+    /// - Parameter transactions: 총 소비 내역 배열
+    /// - Returns: 금일 금액
+    func calculateTotalAmount(from transactions: [Transaction]) -> Double {
+        return transactions
+            .map { $0.amount}
+            .reduce(0, +)
+    }
+    
+    /// 캘린더 상단에 20XX년 X월 문자열
     var monthAndYearString: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy년 M월"
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter.string(from: currentDate)
     }
-
+    
+    /// 날짜 선택
+    /// - Parameter date: 선택된 날짜
+    func selectDate(date: Date) {
+        // 이미 선택된 날짜를 다시 선택하면 선택 해제 (nil)
+        if let selected = selectedDate, Calendar.current.isDate(selected, inSameDayAs: date) {
+            selectedDate = nil
+        } else {
+            selectedDate = date
+        }
+    }
+    
+    /// 월 이동
+    /// - 캘린더에서 1개월 씩 넘어갈 때마다 호출됨
+    /// - Parameter value: 얼마나 이동할 지 값
     func moveMonth(by value: Int) {
         guard let newDate = Calendar.current.date(byAdding: .month, value: value, to: currentDate) else { return }
         self.currentDate = newDate
     }
-
+    
+    /// Date 타입을 DataValue 타입으로 변환
     func convertDateToDateValue() -> [DateValue] {
         let calendar = Calendar.current
         
@@ -86,7 +119,6 @@ final class CalendarViewModel: ObservableObject {
         let trailingCount = 42 - allDays.count
         if trailingCount > 0 {
             guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: currentCalendar) else { return [] }
-            let nextMonthDays = nextMonth.getAllDates()
             for d in 1...trailingCount {
                 if let nextDate = calendar.date(bySetting: .day, value: d, of: nextMonth) {
                     allDays.append(DateValue(day: d, date: nextDate, isCurrentMonth: false, hasTransactions: false))
