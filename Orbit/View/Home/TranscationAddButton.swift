@@ -18,10 +18,10 @@ struct TranscationAddButton: View {
                 // TODO: 지출 추가 화면 이동
             })
         } label: {
-            Image(systemName: "plus")
-                    .font(.body)
-                    .foregroundStyle(.black)
-                    .padding(8)
+            Image(systemName: "plus.circle.fill")
+                .resizable()
+                .foregroundColor(.accentColor) // 앱의 기본 강조색 사용
+                .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
         }
     }
 }
