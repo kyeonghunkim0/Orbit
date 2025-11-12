@@ -8,51 +8,22 @@
 .Trashes
 *~
 
-## Xcode
-# Build artifacts
-build/
+# =========================
+# Tuist
+# =========================
+# Xcode project files
+*.xcodeproj
+*.xcworkspace
+*.xcworkspacedata
+
+# (기존 .gitignore 내용 중 유지할 것들)
+# User settings
+xcuserdata/
+
+# Build results
 DerivedData/
-*.app
-*.ipa
-*.dSYM/
-*.dSYM.zip
-
-# User-specific settings (These SHOULD be ignored)
-*.xcuserdatad/
-*.xcodeproj/project.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
-*.xcworkspace/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
-
-# Test & Coverage
-*.gcno
-*.gcda
-*.xccovreport
-*.xctestrun
-timeline.xctimeline
-playground.xcworkspace
-
-# Dependency Managers
-
-## CocoaPods
-# We check in Podfile and Podfile.lock. The Pods directory is installed via 'pod install'.
-Pods/
-
-## Carthage
-# We check in Cartfile and Cartfile.resolved.
-Carthage/Build/
-Carthage/Checkouts/
-
-## Swift Package Manager
-# We check in Package.swift and Package.resolved.
+build/
 .build/
-.swiftpm/
-Packages/
 
-# Fastlane
-fastlane/report.xml
-fastlane/screenshots/
-fastlane/test_output/
-
-# Code Injection
-iOSInjectionProject/
+# Other
+.DS_Store
