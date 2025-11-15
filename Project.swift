@@ -14,7 +14,6 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: bundleIdBase,
-            infoPlist: .default,
             sources: ["Orbit/**"],
             resources: [
                 "Orbit/Assets.xcassets/**",
@@ -29,7 +28,6 @@ let project = Project(
                     destinations: .iOS,
                     product: .unitTests,
                     bundleId: "\(bundleIdBase)Tests",
-                    infoPlist: .default,
                     sources: ["OrbitTests/**"],
                     resources: [],
                     dependencies: [
@@ -43,7 +41,7 @@ let project = Project(
                     destinations: .iOS,
                     product: .uiTests,
                     bundleId: "\(bundleIdBase)UITests",
-                    infoPlist: .default,
+
                     sources: ["OrbitUITests/**"],
                     resources: [],
                     dependencies: [
