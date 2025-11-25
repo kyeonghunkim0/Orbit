@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct OrbitApp: App {
@@ -9,6 +10,7 @@ struct OrbitApp: App {
             TabBarView()
                 .environmentObject(calendarModel)
         }
+        .modelContainer(for: [Transaction.self, Category.self])
     }
 }
 

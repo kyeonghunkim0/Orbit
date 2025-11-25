@@ -6,23 +6,30 @@
 //
 
 import Foundation
+import SwiftData
 
-struct Category: Identifiable, Hashable {
-    let id = UUID()
+@Model
+final class Category {
     /// 카테고리명
-    let name: String
+    var name: String
     /// 아이콘
-    let iconName: String
+    var iconName: String
     /// 이 카테고리가 수입인지 지출인지 구분
-    let type: TransactionType
+    var type: TransactionType
+    
+    init(name: String, iconName: String, type: TransactionType) {
+        self.name = name
+        self.iconName = iconName
+        self.type = type
+    }
 }
 
 // 예시 카테고리
 extension Category {
     static let sampleCategories: [Category] = [
-        .init(name: "식비", iconName: "fork.knife", type: .expense),
-        .init(name: "교통", iconName: "car.fill", type: .expense),
-        .init(name: "월급", iconName: "wonsign.circle.fill", type: .income),
-        .init(name: "기타", iconName: "ellipsis.circle.fill", type: .expense)
+        Category(name: "식비", iconName: "fork.knife", type: .expense),
+        Category(name: "교통", iconName: "car.fill", type: .expense),
+        Category(name: "월급", iconName: "wonsign.circle.fill", type: .income),
+        Category(name: "기타", iconName: "ellipsis.circle.fill", type: .expense)
     ]
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct DailyTransactionListView: View {
     
@@ -14,9 +15,14 @@ struct DailyTransactionListView: View {
     /// 선택된 날짜
     let selectedDate: Date
     
+    /// 전체 거래 내역 (부모 뷰로부터 전달받음)
+    let transactions: [Transaction]
+    
     /// 선택된 날짜의 거래내역
     var dailyTransactions: [Transaction] {
-        viewModel.transactions(for: selectedDate)
+        transactions.filter { transaction in
+            Calendar.current.isDate(transaction.date, inSameDayAs: selectedDate)
+        }
     }
     
     /// 총 지출 문자열 값으로 변환
@@ -67,5 +73,6 @@ struct DailyTransactionListView: View {
 }
 
 #Preview {
-    DailyTransactionListView(viewModel: CalendarViewModel(), selectedDate: Date())
+    DailyTransactionListView(viewModel: CalendarViewModel(), selectedDate: Date(), transactions: Transaction.sampleTransactions)
+        .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }

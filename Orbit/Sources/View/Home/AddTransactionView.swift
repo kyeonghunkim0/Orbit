@@ -7,12 +7,14 @@
 
 // Orbit/View/Home/AddTransactionView.swift
 import SwiftUI
+import SwiftData
 
 struct AddTransactionView: View {
     
-    @EnvironmentObject var calendarModel: CalendarViewModel
-    
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) var dismiss
+    
+    @Query var categories: [Category]
     
     // Form 입력을 위한 @State 변수
     @State private var selectedType: TransactionType = .expense
@@ -20,10 +22,10 @@ struct AddTransactionView: View {
     @State private var memo: String = ""
     
     @State private var selectedDate: Date = Date()
-    @State private var selectedCategory: Category = Category.sampleCategories[0]
+    @State private var selectedCategory: Category?
     
     var filteredCategory: [Category] {
-        Category.sampleCategories.filter { $0.type == selectedType }
+        categories.filter { $0.type == selectedType }
     }
     
     var body: some View {
@@ -37,11 +39,15 @@ struct AddTransactionView: View {
                 }
                 .pickerStyle(.segmented)
                 
-                Picker("카테고리",
-                       selection: $selectedCategory) {
-                    ForEach(filteredCategory) { category in
-                        Text(category.name).tag(category)
+                if !filteredCategory.isEmpty {
+                    Picker("카테고리",
+                           selection: $selectedCategory) {
+                        ForEach(filteredCategory) { category in
+                            Text(category.name).tag(category as Category?)
+                        }
                     }
+                } else {
+                    Text("카테고리가 없습니다.")
                 }
                 
                 TextField("금액", value: $amount,
@@ -70,12 +76,20 @@ struct AddTransactionView: View {
                         saveTransaction()
                         dismiss()
                     }
+                    .disabled(selectedCategory == nil)
                 }
             }
             // 수입/지출 타입이 변경되면, 카테고리 선택을 필터링된 목록의 첫 번째 항목으로 리셋
             .onChange(of: selectedType) {
                 if let firstCateogry = filteredCategory.first {
                     selectedCategory = firstCateogry
+                } else {
+                    selectedCategory = nil
+                }
+            }
+            .onAppear {
+                if selectedCategory == nil, let first = filteredCategory.first {
+                    selectedCategory = first
                 }
             }
         }
@@ -93,11 +107,11 @@ struct AddTransactionView: View {
             memo: memo
         )
         
-        calendarModel.allTransactions.append(newTransaction)
+        modelContext.insert(newTransaction)
     }
 }
 
 #Preview {
     AddTransactionView()
-        .environmentObject(CalendarViewModel())
+        .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }

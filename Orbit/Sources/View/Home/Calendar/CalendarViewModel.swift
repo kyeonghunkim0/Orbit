@@ -38,16 +38,6 @@ final class CalendarViewModel: ObservableObject {
     /// 선택된 날짜
     @Published var selectedDate: Date? = Date()
     
-    /// 모든 거래 내역
-    @Published var allTransactions: [Transaction] = Transaction.sampleTransactions
-    
-    /// Date에 따른Transaction 가져오기
-    func transactions(for date: Date) -> [Transaction] {
-        return allTransactions.filter { transaction in
-            return Calendar.current.isDate(transaction.date, inSameDayAs: date)
-        }
-    }
-    
     /// 금일 총 소비 지출 총액
     /// - Parameter transactions: 총 소비 내역 배열
     /// - Returns: 금일 금액

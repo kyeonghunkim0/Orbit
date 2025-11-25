@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct TransactionDetailView: View {
     let transaction: Transaction
@@ -39,7 +40,7 @@ struct TransactionDetailView: View {
     var body: some View {
         HStack(spacing: 15) {
             // 카테고리 아이콘
-            Image(systemName: transaction.category.iconName)
+            Image(systemName: transaction.category?.iconName ?? "questionmark.circle")
                 .resizable()
                 .frame(width: 20, height: 20)
                 .padding(8)
@@ -48,7 +49,7 @@ struct TransactionDetailView: View {
             
             // 카테고리 이름 & 메모
             VStack(alignment: .leading) {
-                Text(transaction.category.name)
+                Text(transaction.category?.name ?? "미분류")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 
@@ -72,4 +73,5 @@ struct TransactionDetailView: View {
 
 #Preview {
     TransactionDetailView(transaction: Transaction.sampleTransactions[0])
+        .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }

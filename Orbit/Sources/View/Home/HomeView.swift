@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @EnvironmentObject var calendarModel: CalendarViewModel
+    @Query private var transactions: [Transaction]
     
     /// Sheet 표시 여부
     @State private var isShowingAddSheet = false
@@ -22,7 +24,7 @@ struct HomeView: View {
                 
                 // 선택된 날짜가 있을 때만 DailyTransactionListView 표시
                 if let selectedDate = calendarModel.selectedDate{
-                    DailyTransactionListView(viewModel: calendarModel, selectedDate: selectedDate)
+                    DailyTransactionListView(viewModel: calendarModel, selectedDate: selectedDate, transactions: transactions)
                 } else {
                     Spacer()
                 }
