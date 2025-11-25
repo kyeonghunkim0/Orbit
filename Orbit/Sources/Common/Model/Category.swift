@@ -26,7 +26,7 @@ final class Category {
 
 // 예시 카테고리
 extension Category {
-    static let sampleCategories: [Category] = [
+    static let defaultCategories: [Category] = [
         Category(name: "식비", iconName: "fork.knife", type: .expense),
         Category(name: "교통", iconName: "car.fill", type: .expense),
         Category(name: "월급", iconName: "wonsign.circle.fill", type: .income),

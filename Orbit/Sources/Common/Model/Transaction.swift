@@ -43,9 +43,9 @@ final class Transaction {
 extension Transaction {
     /// Dummy Data
     static let sampleTransactions: [Transaction] = [
-        Transaction(date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, amount: -15000, type: .expense, category: Category.sampleCategories[0], memo: "저녁 식사"),
-        Transaction(date: Date(), amount: -4500, type: .expense, category: Category.sampleCategories[1], memo: "지하철"),
-        Transaction(date: Date(), amount: -8000, type: .expense, category: Category.sampleCategories[0], memo: "점심 커피"),
-        Transaction(date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!, amount: 2500000, type: .income, category: Category.sampleCategories[2], memo: "이달의 월급")
+        Transaction(date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, amount: -15000, type: .expense, category: Category.defaultCategories[0], memo: "저녁 식사"),
+        Transaction(date: Date(), amount: -4500, type: .expense, category: Category.defaultCategories[1], memo: "지하철"),
+        Transaction(date: Date(), amount: -8000, type: .expense, category: Category.defaultCategories[0], memo: "점심 커피"),
+        Transaction(date: Calendar.current.date(byAdding: .day, value: 3, to: Date())!, amount: 2500000, type: .income, category: Category.defaultCategories[2], memo: "이달의 월급")
     ]
 }
