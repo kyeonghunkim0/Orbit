@@ -67,6 +67,16 @@ struct DailyTransactionListView: View {
                     }
                 }
                 .listStyle(.plain)
+            } else {
+                // 내역이 없을 때 표시할 뷰
+                VStack {
+                    Spacer()
+                    Text("내역이 없습니다.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
