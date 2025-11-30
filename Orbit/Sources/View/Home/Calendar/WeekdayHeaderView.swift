@@ -21,7 +21,7 @@ struct WeekdayHeaderView: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     // 일요일 Text 색상 Red
-                    .foregroundStyle(day == "일" ? .red : .black)
+                    .foregroundStyle(day == "일" ? .red : .primary)
             }
         }
     }

@@ -11,6 +11,8 @@ struct TabBarView: View {
     
     @EnvironmentObject var calendarModel: CalendarViewModel
     
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    
     var body: some View {
         TabView {
             Tab("홈",
@@ -33,6 +35,7 @@ struct TabBarView: View {
                 SettingsView()
             }
         }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
     }
 }
 

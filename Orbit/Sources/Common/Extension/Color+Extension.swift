@@ -22,6 +22,13 @@ extension Color {
 
         let length = hexSanitized.count
 
+        // Check for Black (#000000) or White (#FFFFFF) and return primary color
+        // This ensures visibility in both Light and Dark modes
+        if hexSanitized.uppercased() == "000000" || hexSanitized.uppercased() == "FFFFFF" {
+            self = .primary
+            return
+        }
+
         guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
 
         if length == 6 {

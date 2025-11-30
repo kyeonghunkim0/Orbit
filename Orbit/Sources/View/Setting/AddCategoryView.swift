@@ -26,7 +26,7 @@ struct AddCategoryView: View {
     ]
     
     private let colors: [Color] = [
-        .red, .orange, .yellow, .green, .mint, .teal, .cyan, .blue, .indigo, .purple, .pink, .brown, .gray, .black
+        .red, .orange, .yellow, .green, .mint, .teal, .cyan, .blue, .indigo, .purple, .pink, .brown, .gray, .primary
     ]
     
     var body: some View {
