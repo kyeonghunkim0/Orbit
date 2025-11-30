@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct MonthlyTransactionList: View {
+    @Environment(\.modelContext) private var modelContext
     @Query private var transactions: [Transaction]
     
     init(month: Date) {
@@ -20,6 +21,8 @@ struct MonthlyTransactionList: View {
             transaction.date >= startOfMonth && transaction.date < endOfMonth
         }, sort: \Transaction.date, order: .reverse)
     }
+    
+    @State private var selectedTransaction: Transaction?
     
     var body: some View {
         if transactions.isEmpty {
@@ -34,10 +37,26 @@ struct MonthlyTransactionList: View {
         } else {
             List {
                 ForEach(transactions) { transaction in
-                    TransactionDetailView(transaction: transaction)
+                    Button {
+                        selectedTransaction = transaction
+                    } label: {
+                        TransactionDetailView(transaction: transaction)
+                    }
                 }
+                .onDelete(perform: deleteTransactions)
             }
             .listStyle(.plain)
+            .sheet(item: $selectedTransaction) { transaction in
+                EditTransactionView(transaction: transaction)
+            }
+        }
+    }
+    
+    private func deleteTransactions(offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                modelContext.delete(transactions[index])
+            }
         }
     }
 }

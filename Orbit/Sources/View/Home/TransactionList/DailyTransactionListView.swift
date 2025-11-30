@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct DailyTransactionListView: View {
-    
+    @Environment(\.modelContext) private var modelContext
     @ObservedObject var viewModel: CalendarViewModel
     
     /// 선택된 날짜
@@ -48,6 +48,8 @@ struct DailyTransactionListView: View {
         return prefix + amountString + "원"
     }
     
+    @State private var selectedTransaction: Transaction?
+    
     var body: some View {
         VStack(alignment: .leading) {
             // 거래 내역이 있을 경우에만 List 표시
@@ -63,8 +65,14 @@ struct DailyTransactionListView: View {
                 List {
                     // 필터링된 거래 내역을 반복하여 표시
                     ForEach(dailyTransactions.sorted(by: { $0.date > $1.date })) { transaction in
-                        TransactionDetailView(transaction: transaction)
+                        Button {
+                            selectedTransaction = transaction
+                        } label: {
+                            TransactionDetailView(transaction: transaction)
+                        }
+                        .listRowInsets(EdgeInsets()) // Remove default button padding if needed
                     }
+                    .onDelete(perform: deleteTransactions)
                 }
                 .listStyle(.plain)
             } else {
@@ -77,6 +85,18 @@ struct DailyTransactionListView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .sheet(item: $selectedTransaction) { transaction in
+            EditTransactionView(transaction: transaction)
+        }
+    }
+    
+    private func deleteTransactions(offsets: IndexSet) {
+        let sortedTransactions = dailyTransactions.sorted(by: { $0.date > $1.date })
+        withAnimation {
+            for index in offsets {
+                modelContext.delete(sortedTransactions[index])
             }
         }
     }
