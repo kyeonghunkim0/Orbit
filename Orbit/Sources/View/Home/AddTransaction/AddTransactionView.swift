@@ -96,9 +96,35 @@ struct AddTransactionView: View {
                 if selectedCategory == nil, let first = filteredCategory.first {
                     selectedCategory = first
                 }
+                
+                if let initialAmount = initialAmount {
+                    amount = initialAmount
+                }
+                if let initialDate = initialDate {
+                    selectedDate = initialDate
+                }
+                if let initialMemo = initialMemo {
+                    memo = initialMemo
+                }
             }
+            .sheet(isPresented: $showScanner) {
+                ReceiptScannerView(recognizedText: $memo, scannedDate: $selectedDate, scannedAmount: $amount)
+            }
+
         }
     }
+    
+    var initialAmount: Double?
+    var initialDate: Date?
+    var initialMemo: String?
+    
+    init(amount: Double? = nil, date: Date? = nil, memo: String? = nil) {
+        self.initialAmount = amount
+        self.initialDate = date
+        self.initialMemo = memo
+    }
+    
+    @State private var showScanner = false
     
     /// 입력된 정보를 새로운 Transaction 객체를 생성하고 ViewModel에 추가
     func saveTransaction() {

@@ -8,6 +8,7 @@ let infoPlist: InfoPlist = .extendingDefault(with: [
     "UILaunchScreen": [
         "UIImageName": "",
     ],
+    "NSCameraUsageDescription": "영수증 스캔을 위해 카메라 접근 권한이 필요합니다.",
 ])
 
 let settings: Settings = .settings(base: [
