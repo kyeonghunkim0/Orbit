@@ -45,6 +45,7 @@ struct TransactionsView: View {
             .navigationTitle("전체 내역")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationViewStyle(.stack)
     }
     
     private func changeMonth(by value: Int) {
