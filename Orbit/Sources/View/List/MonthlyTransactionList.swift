@@ -37,11 +37,11 @@ struct MonthlyTransactionList: View {
         } else {
             List {
                 ForEach(transactions) { transaction in
-                    Button {
-                        selectedTransaction = transaction
-                    } label: {
-                        TransactionDetailView(transaction: transaction)
-                    }
+                    TransactionDetailView(transaction: transaction)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedTransaction = transaction
+                        }
                 }
                 .onDelete(perform: deleteTransactions)
             }

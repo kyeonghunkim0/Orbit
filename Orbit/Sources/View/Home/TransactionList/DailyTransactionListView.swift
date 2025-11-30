@@ -65,12 +65,12 @@ struct DailyTransactionListView: View {
                 List {
                     // 필터링된 거래 내역을 반복하여 표시
                     ForEach(dailyTransactions.sorted(by: { $0.date > $1.date })) { transaction in
-                        Button {
-                            selectedTransaction = transaction
-                        } label: {
-                            TransactionDetailView(transaction: transaction)
-                        }
-                        .listRowInsets(EdgeInsets()) // Remove default button padding if needed
+                        TransactionDetailView(transaction: transaction)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedTransaction = transaction
+                            }
+                            .listRowInsets(EdgeInsets()) // Remove default button padding if needed
                     }
                     .onDelete(perform: deleteTransactions)
                 }
