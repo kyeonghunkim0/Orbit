@@ -62,6 +62,17 @@ let project = Project(
             dependencies: [
                 .target(name: "Orbit")
             ]
+        ),
+        
+        .target(
+            name: "Orbit-WatchOS Watch App",
+            destinations: .watchOS,
+            product: .app,
+            bundleId: "\(bundleIdBase).watchkitapp",
+            deploymentTargets: .watchOS("11.0"),
+            sources: ["Orbit-WatchOS Watch App/**"],
+            resources: [],
+            dependencies: []
         )
     ]
 )
