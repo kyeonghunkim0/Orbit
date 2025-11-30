@@ -79,7 +79,11 @@ let project = Project(
             bundleId: "\(bundleIdBase).watchkitapp",
             deploymentTargets: .watchOS("11.0"),
             infoPlist: watchInfoPlist,
-            sources: ["Orbit-WatchOS Watch App/**"],
+            sources: [
+                "Orbit-WatchOS Watch App/**",
+                "Orbit/Sources/Common/Manager/ConnectivityManager.swift",
+                "Orbit/Sources/Common/Enum/TransactionType.swift"
+            ],
             resources: [],
             dependencies: []
         )
