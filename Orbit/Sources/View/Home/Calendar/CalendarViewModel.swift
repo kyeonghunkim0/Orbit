@@ -89,15 +89,20 @@ final class CalendarViewModel: ObservableObject {
         var allDays: [DateValue] = []
         
         // 현재 월의 첫 날이 시작하는 요일의 인덱스
-        let firstDayOfWeek = calendar.component(.weekday, from: currentMonthDays.first?.date ?? Date())
+        let firstDayOfCurrentMonth = currentMonthDays.first?.date ?? Date()
+        let firstDayOfWeek = calendar.component(.weekday, from: firstDayOfCurrentMonth)
         
         // 이전 달의 날짜 추가
         let leadingCount = firstDayOfWeek - 1
         if leadingCount > 0 {
-            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: currentCalendar) else { return [] }
+            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: firstDayOfCurrentMonth) else { return [] }
             let prevMonthDays = prevMonth.getAllDates()
+            let prevMonthComponents = calendar.dateComponents([.year, .month], from: prevMonth)
+            
             for d in (prevMonthDays.count - leadingCount + 1)...prevMonthDays.count {
-                if let prevDate = calendar.date(bySetting: .day, value: d, of: prevMonth) {
+                var components = prevMonthComponents
+                components.day = d
+                if let prevDate = calendar.date(from: components) {
                     allDays.append(DateValue(day: d, date: prevDate, isCurrentMonth: false, hasTransactions: false))
                 }
             }
@@ -108,9 +113,13 @@ final class CalendarViewModel: ObservableObject {
         // 다음 달의 날짜 추가 (총 42개로 맞추기 위함)
         let trailingCount = 42 - allDays.count
         if trailingCount > 0 {
-            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: currentCalendar) else { return [] }
+            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: firstDayOfCurrentMonth) else { return [] }
+            let nextMonthComponents = calendar.dateComponents([.year, .month], from: nextMonth)
+            
             for d in 1...trailingCount {
-                if let nextDate = calendar.date(bySetting: .day, value: d, of: nextMonth) {
+                var components = nextMonthComponents
+                components.day = d
+                if let nextDate = calendar.date(from: components) {
                     allDays.append(DateValue(day: d, date: nextDate, isCurrentMonth: false, hasTransactions: false))
                 }
             }
