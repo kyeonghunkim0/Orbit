@@ -22,6 +22,7 @@ struct ChartDataPoint: Identifiable {
     let date: Date
     let amount: Double
     let type: TransactionType
+    let category: Category?
 }
 
 struct CategoryStatistics: Identifiable {
@@ -40,6 +41,10 @@ class StatisticsViewModel: ObservableObject {
     @Published var categoryStatistics: [CategoryStatistics] = []
     @Published var totalAmount: Double = 0
     
+    @Published var chartStartDate: Date = Date()
+    @Published var chartEndDate: Date = Date()
+    @Published var focusedDate: Date = Date()
+    
     private var transactions: [Transaction] = []
     
     func updateData(with transactions: [Transaction]) {
@@ -48,18 +53,26 @@ class StatisticsViewModel: ObservableObject {
     }
     
     func filterAndAggregateData() {
+        generateChartData()
+        updateStatistics(for: focusedDate)
+    }
+    
+    func generateChartData() {
         let calendar = Calendar.current
         let now = Date()
         
         var filteredTransactions: [Transaction] = []
         
-        // 1. Filter by Period
+        // 1. Filter by Period (for Chart Range)
         switch selectedPeriod {
         case .week:
             // Last 7 days
             if let weekAgo = calendar.date(byAdding: .day, value: -6, to: now) {
                 let startOfDay = calendar.startOfDay(for: weekAgo)
                 filteredTransactions = transactions.filter { $0.date >= startOfDay && $0.date <= now }
+                
+                chartStartDate = calendar.date(byAdding: .day, value: -1, to: startOfDay) ?? startOfDay
+                chartEndDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
             }
         case .month:
             // Last 6 months
@@ -67,6 +80,9 @@ class StatisticsViewModel: ObservableObject {
                 let components = calendar.dateComponents([.year, .month], from: sixMonthsAgo)
                 if let startOfMonth = calendar.date(from: components) {
                     filteredTransactions = transactions.filter { $0.date >= startOfMonth && $0.date <= now }
+                    
+                    chartStartDate = calendar.date(byAdding: .day, value: -15, to: startOfMonth) ?? startOfMonth
+                    chartEndDate = calendar.date(byAdding: .day, value: 15, to: now) ?? now
                 }
             }
         case .year:
@@ -75,6 +91,9 @@ class StatisticsViewModel: ObservableObject {
                 let components = calendar.dateComponents([.year], from: fiveYearsAgo)
                 if let startOfYear = calendar.date(from: components) {
                     filteredTransactions = transactions.filter { $0.date >= startOfYear && $0.date <= now }
+                    
+                    chartStartDate = calendar.date(byAdding: .month, value: -6, to: startOfYear) ?? startOfYear
+                    chartEndDate = calendar.date(byAdding: .month, value: 6, to: now) ?? now
                 }
             }
         }
@@ -82,11 +101,14 @@ class StatisticsViewModel: ObservableObject {
         // 2. Filter by Type (Income/Expense)
         filteredTransactions = filteredTransactions.filter { $0.type == selectedType }
         
-        // 3. Calculate Total
-        totalAmount = filteredTransactions.reduce(0) { $0 + abs($1.amount) }
+        // 3. Aggregate for Chart (Time-based + Category)
+        struct AggregationKey: Hashable {
+            let date: Date
+            let category: Category?
+        }
         
-        // 4. Aggregate for Chart (Time-based)
-        var timeAggregatedData: [Date: Double] = [:]
+        var aggregatedData: [AggregationKey: Double] = [:]
+        
         for transaction in filteredTransactions {
             let dateKey: Date
             switch selectedPeriod {
@@ -100,15 +122,53 @@ class StatisticsViewModel: ObservableObject {
                 let components = calendar.dateComponents([.year], from: transaction.date)
                 dateKey = calendar.date(from: components) ?? transaction.date
             }
-            timeAggregatedData[dateKey, default: 0] += abs(transaction.amount)
+            
+            let key = AggregationKey(date: dateKey, category: transaction.category)
+            aggregatedData[key, default: 0] += abs(transaction.amount)
         }
         
-        chartData = timeAggregatedData.map { ChartDataPoint(date: $0.key, amount: $0.value, type: selectedType) }
-            .sorted { $0.date < $1.date }
-            
-        // 5. Aggregate by Category
+        chartData = aggregatedData.map { key, value in
+            ChartDataPoint(date: key.date, amount: value, type: selectedType, category: key.category)
+        }.sorted { $0.date < $1.date }
+    }
+    
+    func updateStatistics(for date: Date) {
+        let calendar = Calendar.current
+        var targetTransactions: [Transaction] = []
+        
+        // Filter transactions for the specific focused date unit
+        switch selectedPeriod {
+        case .week:
+            // Specific Day
+            let startOfDay = calendar.startOfDay(for: date)
+            if let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) {
+                targetTransactions = transactions.filter { $0.date >= startOfDay && $0.date < endOfDay }
+            }
+        case .month:
+            // Specific Month
+            let components = calendar.dateComponents([.year, .month], from: date)
+            if let startOfMonth = calendar.date(from: components),
+               let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth) {
+                targetTransactions = transactions.filter { $0.date >= startOfMonth && $0.date < endOfMonth }
+            }
+        case .year:
+            // Specific Year
+            let components = calendar.dateComponents([.year], from: date)
+            if let startOfYear = calendar.date(from: components),
+               let endOfYear = calendar.date(byAdding: .year, value: 1, to: startOfYear) {
+                targetTransactions = transactions.filter { $0.date >= startOfYear && $0.date < endOfYear }
+            }
+        }
+        
+        // Filter by Type
+        targetTransactions = targetTransactions.filter { $0.type == selectedType }
+        
+        // Calculate Total
+        totalAmount = targetTransactions.reduce(0) { $0 + abs($1.amount) }
+        
+        // Aggregate by Category
         var categoryMap: [Category: Double] = [:]
-        for transaction in filteredTransactions {
+        for transaction in targetTransactions {
             if let category = transaction.category {
                 categoryMap[category, default: 0] += abs(transaction.amount)
             }

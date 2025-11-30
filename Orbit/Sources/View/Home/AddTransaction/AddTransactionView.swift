@@ -43,7 +43,12 @@ struct AddTransactionView: View {
                     Picker("카테고리",
                            selection: $selectedCategory) {
                         ForEach(filteredCategory) { category in
-                            Text(category.name).tag(category as Category?)
+                            HStack {
+                                Image(systemName: category.iconName)
+                                    .foregroundStyle(Color(hex: category.color) ?? .primary)
+                                Text(category.name)
+                            }
+                            .tag(category as Category?)
                         }
                     }
                 } else {
