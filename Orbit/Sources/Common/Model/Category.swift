@@ -30,9 +30,22 @@ final class Category {
 // 예시 카테고리
 extension Category {
     static let defaultCategories: [Category] = [
+        // 지출
         Category(name: "식비", iconName: "fork.knife", type: .expense, color: "#FF5733"), // Red-Orange
         Category(name: "교통", iconName: "car.fill", type: .expense, color: "#33FF57"), // Green
+        Category(name: "쇼핑", iconName: "cart.fill", type: .expense, color: "#FF33A8"), // Pink
+        Category(name: "카페", iconName: "cup.and.saucer.fill", type: .expense, color: "#A833FF"), // Purple
+        Category(name: "편의점", iconName: "basket.fill", type: .expense, color: "#33FFF5"), // Cyan
+        Category(name: "의료", iconName: "pills.fill", type: .expense, color: "#FF3333"), // Red
+        Category(name: "주거", iconName: "house.fill", type: .expense, color: "#FF8C33"), // Orange
+        
+        // 수입
         Category(name: "월급", iconName: "wonsign.circle.fill", type: .income, color: "#3357FF"), // Blue
+        Category(name: "용돈", iconName: "envelope.fill", type: .income, color: "#33A8FF"), // Light Blue
+        Category(name: "부수입", iconName: "banknote.fill", type: .income, color: "#33FF8C"), // Light Green
+        Category(name: "금융수입", iconName: "chart.line.uptrend.xyaxis", type: .income, color: "#FFD700"), // Gold
+        
+        // 기타
         Category(name: "기타", iconName: "ellipsis.circle.fill", type: .expense, color: "#A0A0A0") // Gray
     ]
 }

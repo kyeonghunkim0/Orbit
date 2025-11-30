@@ -11,15 +11,19 @@ struct OrbitApp: App {
         do {
             container = try ModelContainer(for: Transaction.self, Category.self)
             
-            // Check if categories exist
+            // Check and add missing default categories
             let context = container.mainContext
-            let descriptor = FetchDescriptor<Category>()
-            let existingCount = try context.fetchCount(descriptor)
             
-            if existingCount == 0 {
-                // Add default categories
-                for category in Category.defaultCategories {
+            for category in Category.defaultCategories {
+                let categoryName = category.name
+                let descriptor = FetchDescriptor<Category>(
+                    predicate: #Predicate { $0.name == categoryName }
+                )
+                let count = try context.fetchCount(descriptor)
+                
+                if count == 0 {
                     context.insert(category)
+                    print("Added missing default category: \(category.name)")
                 }
             }
         } catch {
