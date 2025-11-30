@@ -11,6 +11,14 @@ let infoPlist: InfoPlist = .extendingDefault(with: [
     "NSCameraUsageDescription": "영수증 스캔을 위해 카메라 접근 권한이 필요합니다.",
 ])
 
+let watchInfoPlist: InfoPlist = .extendingDefault(with: [
+    "WKApplication": true,
+    "WKCompanionAppBundleIdentifier": "\(bundleIdBase)",
+    "UILaunchScreen": [
+        "UIImageName": "",
+    ],
+])
+
 let settings: Settings = .settings(base: [
     "CODE_SIGN_STYLE": "Automatic"
 ])
@@ -70,6 +78,7 @@ let project = Project(
             product: .app,
             bundleId: "\(bundleIdBase).watchkitapp",
             deploymentTargets: .watchOS("11.0"),
+            infoPlist: watchInfoPlist,
             sources: ["Orbit-WatchOS Watch App/**"],
             resources: [],
             dependencies: []
