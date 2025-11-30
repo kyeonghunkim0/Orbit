@@ -4,6 +4,16 @@ let organizationName = "xoul.kimkhuna" // 파일 경로에서 유추
 let bundleIdBase = "kr.\(organizationName).Orbit"
 
 
+let infoPlist: InfoPlist = .extendingDefault(with: [
+    "UILaunchScreen": [
+        "UIImageName": "",
+    ],
+])
+
+let settings: Settings = .settings(base: [
+    "CODE_SIGN_STYLE": "Automatic"
+])
+
 let project = Project(
     name: "Orbit",
     organizationName: organizationName,
@@ -14,39 +24,43 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: bundleIdBase,
+            deploymentTargets: .iOS("18.0"),
+            infoPlist: infoPlist,
             sources: ["Orbit/**"],
             resources: [
                 "Orbit/Assets.xcassets/**",
                 "Orbit/Preview Content/**"
             ],
-            dependencies: []
+            dependencies: [],
+            settings: settings
         ),
         
         // 2. 유닛 테스트 타겟 (OrbitTests)
-                .target(
-                    name: "OrbitTests",
-                    destinations: .iOS,
-                    product: .unitTests,
-                    bundleId: "\(bundleIdBase)Tests",
-                    sources: ["OrbitTests/**"],
-                    resources: [],
-                    dependencies: [
-                        .target(name: "Orbit")
-                    ]
-                ),
+        .target(
+            name: "OrbitTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "\(bundleIdBase)Tests",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["OrbitTests/**"],
+            resources: [],
+            dependencies: [
+                .target(name: "Orbit")
+            ]
+        ),
 
-                // 3. UI 테스트 타겟 (OrbitUITests)
-                .target(
-                    name: "OrbitUITests",
-                    destinations: .iOS,
-                    product: .uiTests,
-                    bundleId: "\(bundleIdBase)UITests",
-
-                    sources: ["OrbitUITests/**"],
-                    resources: [],
-                    dependencies: [
-                        .target(name: "Orbit")
-                    ]
-                )
+        // 3. UI 테스트 타겟 (OrbitUITests)
+        .target(
+            name: "OrbitUITests",
+            destinations: .iOS,
+            product: .uiTests,
+            bundleId: "\(bundleIdBase)UITests",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["OrbitUITests/**"],
+            resources: [],
+            dependencies: [
+                .target(name: "Orbit")
+            ]
+        )
     ]
 )
