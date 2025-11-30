@@ -24,6 +24,20 @@ struct MonthlyTransactionList: View {
     
     @State private var selectedTransaction: Transaction?
     
+    var groupedTransactions: [(Date, [Transaction])] {
+        let grouped = Dictionary(grouping: transactions) { transaction in
+            Calendar.current.startOfDay(for: transaction.date)
+        }
+        return grouped.sorted { $0.key > $1.key }
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M월 d일"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter
+    }
+    
     var body: some View {
         if transactions.isEmpty {
             VStack {
@@ -36,14 +50,20 @@ struct MonthlyTransactionList: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List {
-                ForEach(transactions) { transaction in
-                    TransactionDetailView(transaction: transaction)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedTransaction = transaction
+                ForEach(groupedTransactions, id: \.0) { date, transactions in
+                    Section(header: Text(dateFormatter.string(from: date))) {
+                        ForEach(transactions) { transaction in
+                            TransactionDetailView(transaction: transaction)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedTransaction = transaction
+                                }
                         }
+                        .onDelete { offsets in
+                            deleteTransactions(offsets: offsets, in: transactions)
+                        }
+                    }
                 }
-                .onDelete(perform: deleteTransactions)
             }
             .listStyle(.plain)
             .sheet(item: $selectedTransaction) { transaction in
@@ -52,7 +72,7 @@ struct MonthlyTransactionList: View {
         }
     }
     
-    private func deleteTransactions(offsets: IndexSet) {
+    private func deleteTransactions(offsets: IndexSet, in transactions: [Transaction]) {
         withAnimation {
             for index in offsets {
                 modelContext.delete(transactions[index])
