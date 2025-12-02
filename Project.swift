@@ -40,7 +40,9 @@ let project = Project(
                 "Orbit/Assets.xcassets/**",
                 "Orbit/Preview Content/**"
             ],
-            dependencies: [],
+            dependencies: [
+                .target(name: "Orbit-WatchOS Watch App")
+            ],
             settings: settings
         ),
         

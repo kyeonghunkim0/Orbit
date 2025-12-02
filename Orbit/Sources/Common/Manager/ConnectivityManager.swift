@@ -9,25 +9,22 @@ import Foundation
 import WatchConnectivity
 import Combine
 
-struct ReceivedTransaction: Equatable {
-    let amount: Double
-    let category: String
-    let type: String
-    let memo: String
-    let date: Date
-}
-
-struct WatchCategory: Codable, Identifiable, Hashable {
-    var id: UUID = UUID()
-    var name: String
-    var type: String
+struct TransactionSummary: Codable, Equatable {
+    var todayExpense: Double
+    var todayIncome: Double
+    var weekExpense: Double
+    var weekIncome: Double
+    var monthExpense: Double
+    var monthIncome: Double
+    var yearExpense: Double
+    var yearIncome: Double
 }
 
 final class ConnectivityManager: NSObject, ObservableObject {
     static let shared = ConnectivityManager()
     
-    @Published var receivedTransaction: ReceivedTransaction?
-    @Published var watchCategories: [WatchCategory] = []
+    @Published var receivedSummary: TransactionSummary?
+    @Published var isSessionActivated: Bool = false
     
     private override init() {
         super.init()
@@ -37,42 +34,51 @@ final class ConnectivityManager: NSObject, ObservableObject {
             WCSession.default.activate()
         }
         
-        // Load cached categories
-        if let data = UserDefaults.standard.data(forKey: "watchCategories"),
-           let categories = try? JSONDecoder().decode([WatchCategory].self, from: data) {
-            self.watchCategories = categories
+        // Load cached summary
+        if let data = UserDefaults.standard.data(forKey: "watchSummary"),
+           let summary = try? JSONDecoder().decode(TransactionSummary.self, from: data) {
+            self.receivedSummary = summary
         }
     }
     
-    func sendTransaction(amount: Double, category: String, type: String, memo: String, date: Date) {
+    func sendSummary(_ summary: TransactionSummary) {
         guard WCSession.default.activationState == .activated else {
-            print("WCSession is not activated")
+            print("Cannot send summary: WCSession not activated")
             return
         }
         
-        let data: [String: Any] = [
-            "amount": amount,
-            "category": category,
-            "type": type,
-            "memo": memo,
-            "date": date
-        ]
+        print("Sending summary: \(summary)")
         
-        WCSession.default.transferUserInfo(data)
-    }
-    
-    func sendCategories(_ categories: [WatchCategory]) {
-        guard WCSession.default.activationState == .activated else { return }
-        
-        if let data = try? JSONEncoder().encode(categories) {
-            let message = ["categories": data]
-            WCSession.default.transferUserInfo(message)
+        if let data = try? JSONEncoder().encode(summary) {
+            let message = ["summary": data]
+            
+            // 1. Use Application Context for background updates (replaces old data)
+            do {
+                try WCSession.default.updateApplicationContext(message)
+                print("Updated Application Context")
+            } catch {
+                print("Error updating application context: \(error)")
+            }
+            
+            // 2. Use sendMessage for immediate foreground updates if reachable
+            if WCSession.default.isReachable {
+                WCSession.default.sendMessage(message, replyHandler: nil) { error in
+                    print("Error sending message: \(error)")
+                }
+                print("Sent message to Watch")
+            } else {
+                print("Watch is not reachable for sendMessage")
+            }
         }
     }
 }
 
 extension ConnectivityManager: WCSessionDelegate {
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        DispatchQueue.main.async {
+            self.isSessionActivated = activationState == .activated
+        }
+        
         if let error = error {
             print("WCSession activation failed: \(error.localizedDescription)")
         } else {
@@ -80,46 +86,53 @@ extension ConnectivityManager: WCSessionDelegate {
         }
     }
     
-    // iOS only methods
     #if os(iOS)
     func sessionDidBecomeInactive(_ session: WCSession) {}
+    
     func sessionDidDeactivate(_ session: WCSession) {
         WCSession.default.activate()
     }
     #endif
     
+    // Handle Application Context (Background)
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+        print("didReceiveApplicationContext: \(applicationContext)")
+        handleReceivedData(applicationContext)
+    }
+    
+    // Handle Message (Foreground)
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        print("didReceiveMessage: \(message)")
+        handleReceivedData(message)
+    }
+    
+    // Handle User Info (Legacy/Queue)
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
-        // Handle Transaction
-        if let amount = userInfo["amount"] as? Double,
-           let category = userInfo["category"] as? String,
-           let type = userInfo["type"] as? String,
-           let memo = userInfo["memo"] as? String,
-           let date = userInfo["date"] as? Date {
-            
-            let transaction = ReceivedTransaction(
-                amount: amount,
-                category: category,
-                type: type,
-                memo: memo,
-                date: date
-            )
-            
-            DispatchQueue.main.async {
-                self.receivedTransaction = transaction
-            }
-        }
+        print("didReceiveUserInfo: \(userInfo)")
+        handleReceivedData(userInfo)
+    }
+    
+    private func handleReceivedData(_ userInfo: [String: Any]) {
+        print("Handling received data...")
         
-        // Handle Categories
-        if let categoryData = userInfo["categories"] as? Data,
-           let categories = try? JSONDecoder().decode([WatchCategory].self, from: categoryData) {
-            
-            DispatchQueue.main.async {
-                self.watchCategories = categories
-                // Cache categories
-                if let encoded = try? JSONEncoder().encode(categories) {
-                    UserDefaults.standard.set(encoded, forKey: "watchCategories")
+        // Handle Summary
+        if let summaryData = userInfo["summary"] as? Data {
+            print("Found summary data, attempting to decode...")
+            do {
+                let summary = try JSONDecoder().decode(TransactionSummary.self, from: summaryData)
+                print("Successfully decoded summary: \(summary)")
+                
+                DispatchQueue.main.async {
+                    self.receivedSummary = summary
+                    if let encoded = try? JSONEncoder().encode(summary) {
+                        UserDefaults.standard.set(encoded, forKey: "watchSummary")
+                    }
                 }
+            } catch {
+                print("Failed to decode summary: \(error)")
             }
+        } else {
+            print("No summary data found in userInfo")
         }
     }
 }

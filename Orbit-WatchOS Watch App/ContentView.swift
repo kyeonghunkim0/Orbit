@@ -3,80 +3,71 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var connectivityManager: ConnectivityManager
     
-    @State private var amount: Double = 0
-    @State private var selectedCategory: String = "식비"
-    @State private var selectedType: String = "지출"
-    @State private var memo: String = ""
-    @State private var showingAlert = false
-    
-
-    
     var body: some View {
         NavigationStack {
-            Form {
-                Section("금액") {
-                    TextField("금액 입력", value: $amount, format: .number)
-                }
-                
-                Section("유형") {
-                    Picker("유형", selection: $selectedType) {
-                        Text("지출").tag("지출")
-                        Text("수입").tag("수입")
+            ScrollView {
+                if let summary = connectivityManager.receivedSummary {
+                    VStack(spacing: 12) {
+                        SummaryCard(title: "오늘", expense: summary.todayExpense, income: summary.todayIncome)
+                        SummaryCard(title: "이번 주", expense: summary.weekExpense, income: summary.weekIncome)
+                        SummaryCard(title: "이번 달", expense: summary.monthExpense, income: summary.monthIncome)
+                        SummaryCard(title: "올해", expense: summary.yearExpense, income: summary.yearIncome)
                     }
-                    .pickerStyle(.navigationLink)
-                }
-                
-                Section("카테고리") {
-                    Picker("카테고리", selection: $selectedCategory) {
-                        if connectivityManager.watchCategories.isEmpty {
-                            Text("카테고리 없음").tag("카테고리 없음")
+                    .padding()
+                } else {
+                    VStack {
+                        if connectivityManager.isSessionActivated {
+                            Text("데이터를 기다리는 중...")
+                                .foregroundStyle(.secondary)
                         } else {
-                            let filteredCategories = connectivityManager.watchCategories.filter { $0.type == selectedType }
-                            ForEach(filteredCategories) { category in
-                                Text(category.name).tag(category.name)
-                            }
+                            Text("iPhone과 연결 중...")
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .pickerStyle(.navigationLink)
-                }
-                
-                Section("메모") {
-                    TextField("메모 (선택)", text: $memo)
-                }
-                
-                Section {
-                    Button(action: saveTransaction) {
-                        Text("추가하기")
-                            .frame(maxWidth: .infinity)
-                            .foregroundStyle(.white)
-                    }
-                    .listRowBackground(Color.blue)
+                    .frame(maxWidth: .infinity, minHeight: 100)
                 }
             }
             .navigationTitle("Orbit")
-            .alert("저장 완료", isPresented: $showingAlert) {
-                Button("확인", role: .cancel) {
-                    resetForm()
+        }
+    }
+}
+
+struct SummaryCard: View {
+    let title: String
+    let expense: Double
+    let income: Double
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.primary)
+            
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("지출")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text("\(Int(abs(expense)))원")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundStyle(.red)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing) {
+                    Text("수입")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text("\(Int(income))원")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundStyle(.blue)
                 }
             }
         }
-    }
-    
-    private func saveTransaction() {
-        connectivityManager.sendTransaction(
-            amount: selectedType == "지출" ? -amount : amount,
-            category: selectedCategory,
-            type: selectedType,
-            memo: memo,
-            date: Date()
-        )
-        showingAlert = true
-    }
-    
-    private func resetForm() {
-        amount = 0
-        memo = ""
-        // Keep category and type as is for convenience
+        .padding()
+        .background(Color.gray.opacity(0.15))
+        .cornerRadius(12)
     }
 }
 
